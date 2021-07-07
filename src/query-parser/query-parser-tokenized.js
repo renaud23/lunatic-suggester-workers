@@ -4,7 +4,10 @@ import { filterStemmer, filterLength, filterDouble } from '../commons-tokenizer'
 import { getRegExpFromPattern } from '../commons-tokenizer';
 
 function toArray(tokens) {
-  return Array.isArray(tokens) ? tokens : [tokens];
+  if (tokens) {
+    return Array.isArray(tokens) ? tokens : [tokens];
+  }
+  return [];
 }
 
 function parser(query = '', { language = 'French', pattern = /[\w]+/, min = 2 } = {}) {
