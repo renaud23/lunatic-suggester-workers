@@ -4,30 +4,31 @@ import getIDB from './get-idb';
 const IDB_REF = getIDB();
 
 function openStorage(name, version = 1) {
-	// const indexedDB = getIDB();
-	return new Promise((resolve, reject) => {
-		if (!IDB_REF) {
-			reject('indexedDb not supported !');
-		}
-		const request = IDB_REF.open(name, version);
-		let db;
-		let doIt = true;
+  return new Promise(function (resolve, reject) {
+    if (!IDB_REF) {
+      reject('indexedDb not supported !');
+    }
+    const request = IDB_REF.open(name, version);
+    let db;
+    let doIt = true;
 
-		request.onupgradeneeded = function (e) {
-			doIt = false;
-			e.target.transaction.abort();
-			reject('fail');
-		};
+    request.onupgradeneeded = function (e) {
+      doIt = false;
+      e.target.transaction.abort();
+      reject('fail');
+    };
 
-		request.onsuccess = function () {
-			db = request.result;
-			if (doIt) resolve(db);
-		};
+    request.onsuccess = function () {
+      db = request.result;
+      if (doIt) {
+        resolve(db);
+      }
+    };
 
-		request.onerror = function (e) {
-			reject(e);
-		};
-	});
+    request.onerror = function (e) {
+      reject(e);
+    };
+  });
 }
 
 export default openStorage;
