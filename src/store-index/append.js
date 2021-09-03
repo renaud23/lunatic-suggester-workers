@@ -42,7 +42,8 @@ async function append(name, version, fields, entities, log = () => null) {
     log({ message: MESSAGES.done });
     return 'success';
   } catch (e) {
-    log({ message: 'une erreur est survenue' });
+    log({ message: 'Une erreur est survenue. Consulter la log !' });
+    throw e;
   }
 }
 
