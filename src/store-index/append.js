@@ -12,7 +12,8 @@ function prepareEntities(fields, entities, log) {
   return entities.map(function (suggestion) {
     const { id } = suggestion;
     if (id) {
-      const tokens = tokenizer(suggestion);
+      const tokensCount = tokenizer(suggestion);
+      const tokens = Object.keys(tokensCount);
       done++;
       if (done % size === 0 || done === max) {
         log({
@@ -24,7 +25,7 @@ function prepareEntities(fields, entities, log) {
           },
         });
       }
-      return { id, suggestion, tokens };
+      return { id, suggestion, tokensCount, tokens };
     } else throw new Error(`Missing id on entity.`);
   }, []);
 }

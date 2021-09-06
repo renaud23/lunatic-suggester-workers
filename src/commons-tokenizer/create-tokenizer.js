@@ -54,6 +54,7 @@ function createTokenizer(fields = []) {
         },
       };
     }
+
     return { ...a, [name]: defaultTokenizer };
   }, {});
 
@@ -67,14 +68,12 @@ function createTokenizer(fields = []) {
 }
 
 function summarize(tokens) {
-  return Object.values(
-    tokens.reduce(function (map, token) {
-      if (token in map) {
-        return { ...map, [token]: { value: token, count: map[token].count + 1 } };
-      }
-      return { ...map, [token]: { value: token, count: 1 } };
-    }, {})
-  );
+  return tokens.reduce(function (map, token) {
+    if (token in map) {
+      return { ...map, [token]: map[token] + 1 };
+    }
+    return { ...map, [token]: 1 };
+  }, {});
 }
 
 function createEntityTokenizer(fields) {
