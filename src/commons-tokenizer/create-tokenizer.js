@@ -1,15 +1,11 @@
 import tokenizer from 'string-tokenizer';
 import removeAccents from 'remove-accents';
-import prepareStringIndexation from './prepare-string-indexation';
+import defaultTokenizer from './default-tokenizer';
 import softTokenizer from './soft-tokenizer';
 import defaultStopWords from './stop-words';
 import filterStemmer from './filter-stemmer';
 import filterLength from './filter-length';
 import getRegExpFromPattern from './get-regexp-from-pattern';
-
-function defaultTokenizeIt(string) {
-  return [prepareStringIndexation(string)];
-}
 
 export function tokensToArray(tokenized) {
   return Object.entries(tokenized).reduce(function (a, [k, values]) {
@@ -54,12 +50,11 @@ function createTokenizer(fields = []) {
             filterStemmer(filterLength(tokensToArray(what), min), language),
             stopWords
           );
-
           return words;
         },
       };
     }
-    return { ...a, [name]: defaultTokenizeIt };
+    return { ...a, [name]: defaultTokenizer };
   }, {});
 
   return function (field, entity) {
@@ -71,12 +66,27 @@ function createTokenizer(fields = []) {
   };
 }
 
+function summarize(tokens) {
+  return Object.values(
+    tokens.reduce(function (map, token) {
+      if (token in map) {
+        return { ...map, [token]: { value: token, count: map[token].count + 1 } };
+      }
+      return { ...map, [token]: { value: token, count: 1 } };
+    }, {})
+  );
+}
+
 function createEntityTokenizer(fields) {
   const tokenizer = createTokenizer(fields);
   return function (entity) {
-    return fields.reduce(function (a, field) {
-      return [...a, ...tokenizer(field, entity)];
+    const tokens = fields.reduce(function (a, field) {
+      const tokens = tokenizer(field, entity);
+      const what = [...a, ...tokens];
+
+      return what;
     }, []);
+    return summarize(tokens);
   };
 }
 

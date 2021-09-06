@@ -36,6 +36,7 @@ async function searching(search, name, version = '1', max = 30) {
       if (max && max < resultat.length) {
         return { results: prepare(resultat.slice(0, max)), search };
       }
+
       return { results: prepare(resultat), search };
     }
     return { results: [], search };
