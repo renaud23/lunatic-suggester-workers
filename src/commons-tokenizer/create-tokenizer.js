@@ -67,12 +67,20 @@ function createTokenizer(fields = []) {
   };
 }
 
-function summarize(tokens) {
+function computeCount(tokens) {
   return tokens.reduce(function (map, token) {
     if (token in map) {
       return { ...map, [token]: map[token] + 1 };
     }
     return { ...map, [token]: 1 };
+  }, {});
+}
+
+function computeTf(tokensCount) {
+  const nb = Object.keys(tokensCount).length;
+
+  return Object.entries(tokensCount).reduce(function (map, [token, count]) {
+    return { ...map, [token]: { count, tf: count / nb } };
   }, {});
 }
 
@@ -85,7 +93,7 @@ function createEntityTokenizer(fields) {
 
       return what;
     }, []);
-    return summarize(tokens);
+    return computeTf(computeCount(tokens));
   };
 }
 

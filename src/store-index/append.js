@@ -1,5 +1,6 @@
 import { openDb, idbBulkInsert, CONSTANTES } from '../commons-idb';
 import MESSAGES from './store-messages';
+import insertTokensStore from './insert-tokens-store';
 import { createTokenizer } from '../commons-tokenizer';
 
 function prepareEntities(fields, entities, log) {
@@ -30,16 +31,41 @@ function prepareEntities(fields, entities, log) {
   }, []);
 }
 
-async function append(name, version, fields, entities, log = () => null) {
+function createTokensMap(entities) {
+  const map = {};
+  entities.forEach(function ({ tokens }) {
+    tokens.forEach(function (token) {
+      if (token in map) {
+        map[token] = { value: token, count: map[token].count + 1 };
+      } else {
+        map[token] = { value: token, count: 1 };
+      }
+    });
+  });
+
+  return map;
+}
+
+async function fillTokensStore(db, tfIdf, entities, log) {
+  if (tfIdf) {
+    const tokensMap = createTokensMap(entities);
+    insertTokensStore(db, tokensMap, log);
+  }
+}
+
+async function append(storeInfo, version, entities, log = () => null) {
   try {
+    const { name, tfIdf, fields } = storeInfo;
     const prepared = prepareEntities(fields, entities, log);
     const db = await openDb(name, version);
+
     log({ message: MESSAGES.startInsertBatch });
     await idbBulkInsert(db, CONSTANTES.STORE_DATA_NAME, function (args) {
       const { message } = args;
       log({ message });
     })(prepared);
     log({ message: MESSAGES.insertBatchDone });
+    fillTokensStore(db, tfIdf, prepared, log);
     log({ message: MESSAGES.done });
     return 'success';
   } catch (e) {

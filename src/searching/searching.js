@@ -1,8 +1,9 @@
 import getDb from './get-db';
-import { CONSTANTES } from '../commons-idb';
+import { CONSTANTES, getEntity } from '../commons-idb';
 import searchInIndex from './search-in-index';
 import resolveQueryParser from './resolve-query-parser';
-import computeScore from './compute-score';
+import computeScoreWithTfIdf from './compute-score-tf-idf';
+import computeScoreDefault from './compute-score';
 
 function prepare(response) {
   return response.map(({ suggestion }) => suggestion);
@@ -22,17 +23,27 @@ function isValideSearch(search) {
   return false;
 }
 
+async function computeScore(info, db, tokensSuggestions) {
+  const { tfIdf } = info;
+  if (tfIdf) {
+    return await computeScoreWithTfIdf(db, tokensSuggestions);
+  }
+
+  return await computeScoreDefault(tokensSuggestions);
+}
+
 async function searching(search, name, version = '1', max = 30) {
   try {
     if (isValideSearch(search)) {
       const db = await getDb(name, version);
-      const parser = await resolveQueryParser(db, name);
+      const info = await getEntity(db, CONSTANTES.STORE_INFO_NAME, name);
+      const parser = await resolveQueryParser(info, name);
       const transaction = db.transaction(CONSTANTES.STORE_DATA_NAME, 'readonly');
       const store = transaction.objectStore(CONSTANTES.STORE_DATA_NAME);
       const index = store.index(CONSTANTES.STORE_INDEX_NAME);
       const tokens = parser(search);
       const tokensSuggestions = await searchTokens(tokens, index);
-      const resultat = computeScore(tokensSuggestions);
+      const resultat = await computeScore(info, db, tokensSuggestions);
       if (max && max < resultat.length) {
         return { results: prepare(resultat.slice(0, max)), search };
       }

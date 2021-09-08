@@ -5,44 +5,48 @@ import getIDB from './get-idb';
 const IDB_REF = getIDB();
 
 function openStorage(name, version = 1) {
-	// const indexedDB = getIDB();
-	return new Promise((resolve, reject) => {
-		if (!IDB_REF) {
-			reject('indexedDb not supported !');
-		}
-		const request = IDB_REF.open(name, version);
-		let db;
-		let doIt = true;
+  // const indexedDB = getIDB();
+  return new Promise((resolve, reject) => {
+    if (!IDB_REF) {
+      reject('indexedDb not supported !');
+    }
+    const request = IDB_REF.open(name, version);
+    let db;
+    let doIt = true;
 
-		request.onupgradeneeded = function (e) {
-			doIt = false;
-			db = e.target.result;
-			const store = db.createObjectStore(CONSTANTE.STORE_DATA_NAME, {
-				keyPath: 'id',
-			});
-			db.createObjectStore(CONSTANTE.STORE_INFO_NAME, {
-				keyPath: 'name',
-			});
-			store.createIndex(CONSTANTE.STORE_INDEX_NAME, 'tokens', {
-				multiEntry: true,
-			});
+    request.onupgradeneeded = function (e) {
+      doIt = false;
+      db = e.target.result;
+      const store = db.createObjectStore(CONSTANTE.STORE_DATA_NAME, {
+        keyPath: 'id',
+      });
+      const storeTokens = db.createObjectStore(CONSTANTE.STORE_TOKENS_NAME, {
+        keyPath: 'value',
+      });
+      db.createObjectStore(CONSTANTE.STORE_INFO_NAME, {
+        keyPath: 'name',
+      });
 
-			const txn = e.target.transaction;
-			txn.oncomplete = function () {
-				resolve(db);
-			};
-		};
+      store.createIndex(CONSTANTE.STORE_INDEX_NAME, 'tokens', {
+        multiEntry: true,
+      });
 
-		request.onsuccess = function () {
-			if (doIt) {
-				resolve(request.result);
-			}
-		};
+      const txn = e.target.transaction;
+      txn.oncomplete = function () {
+        resolve(db);
+      };
+    };
 
-		request.onerror = function (e) {
-			reject(e);
-		};
-	});
+    request.onsuccess = function () {
+      if (doIt) {
+        resolve(request.result);
+      }
+    };
+
+    request.onerror = function (e) {
+      reject(e);
+    };
+  });
 }
 
 export default openStorage;

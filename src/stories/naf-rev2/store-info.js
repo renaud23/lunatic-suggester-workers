@@ -15,6 +15,7 @@ const json = {
   },
   version: '1',
   display: 'libelle',
+  tfIdf: true,
 };
 
 export default json;
