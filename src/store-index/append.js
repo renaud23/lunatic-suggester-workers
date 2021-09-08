@@ -2,11 +2,13 @@ import { openDb, idbBulkInsert, CONSTANTES } from '../commons-idb';
 import MESSAGES from './store-messages';
 import { createTokenizer } from '../commons-tokenizer';
 
+const BATCH_SIZE = 1000;
+
 function prepareEntities(fields, entities, log) {
   const tokenizer = createTokenizer(fields);
 
   let done = 0;
-  const size = 1000;
+
   const max = entities.length;
 
   return entities.map(function (suggestion) {
@@ -14,7 +16,7 @@ function prepareEntities(fields, entities, log) {
     if (id) {
       const tokens = tokenizer(suggestion);
       done++;
-      if (done % size === 0 || done === max) {
+      if (done % BATCH_SIZE === 0 || done === max) {
         log({
           message: {
             ...MESSAGES.indexBatch,
