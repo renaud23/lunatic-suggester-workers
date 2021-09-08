@@ -2,7 +2,7 @@ import tokenizer from 'string-tokenizer';
 import removeAccents from 'remove-accents';
 import prepareStringIndexation from './prepare-string-indexation';
 import softTokenizer from './soft-tokenizer';
-import defaultStopWords from './stop-words';
+import filterStopWords from './filter-stop-words';
 import filterStemmer from './filter-stemmer';
 import filterLength from './filter-length';
 import getRegExpFromPattern from './get-regexp-from-pattern';
@@ -23,21 +23,9 @@ export function tokensToArray(tokenized) {
   }, []);
 }
 
-function filterStopWords(tokens, stops = defaultStopWords) {
-  const mapSW = stops.reduce(function (a, w) {
-    return { ...a, [w]: undefined };
-  }, {});
-  return tokens.reduce(function (a, t) {
-    if (t in mapSW) {
-      return a;
-    }
-    return [...a, t];
-  }, []);
-}
-
-function createTokenizer(fields = []) {
+function createTokenizer(fields = [], stopWords) {
   const FIELDS_TOKENIZER_MAP = fields.reduce(function (a, f) {
-    const { name, rules = [], min, language = 'French', stopWords } = f;
+    const { name, rules = [], min, language = 'French' } = f;
     if (rules === 'soft') {
       return { ...a, [name]: softTokenizer };
     }

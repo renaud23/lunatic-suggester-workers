@@ -15,7 +15,7 @@ function openStorage(name, version = 1) {
     request.onupgradeneeded = function (e) {
       doIt = false;
       e.target.transaction.abort();
-      reject('fail');
+      reject(`Can't open indexedDB database [${name}]`);
     };
 
     request.onsuccess = function () {

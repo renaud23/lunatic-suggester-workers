@@ -6,7 +6,6 @@ import insertEntity from '../commons-idb/insert-entity';
 import * as CONSTANTES from '../commons-idb/constantes';
 import searching from '../searching';
 import { storeInfo, fetchNafRev2 } from './naf-rev2';
-import { doUntil } from 'async';
 
 const idbVersion = '1';
 
@@ -26,7 +25,7 @@ export function ComputeScore() {
         const entities = await fetchNafRev2();
         await clearStore(db, CONSTANTES.STORE_DATA_NAME);
         await clearStore(db, CONSTANTES.STORE_INFO_NAME);
-        await appendStore(storeInfo.name, idbVersion, storeInfo.fields, entities, console.log);
+        await appendStore(storeInfo, idbVersion, storeInfo.fields, entities, console.log);
         await insertEntity(db, CONSTANTES.STORE_INFO_NAME, storeInfo);
       }
       if (db) {
