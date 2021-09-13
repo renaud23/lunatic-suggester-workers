@@ -25,7 +25,7 @@ export function ComputeScore() {
         const entities = await fetchNafRev2();
         await clearStore(db, CONSTANTES.STORE_DATA_NAME);
         await clearStore(db, CONSTANTES.STORE_INFO_NAME);
-        await appendStore(storeInfo, idbVersion, storeInfo.fields, entities, console.log);
+        await appendStore(storeInfo, idbVersion, entities, console.log);
         await insertEntity(db, CONSTANTES.STORE_INFO_NAME, storeInfo);
       }
       if (db) {

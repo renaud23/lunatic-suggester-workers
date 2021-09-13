@@ -29,9 +29,9 @@ function prepareEntities(fields, entities, stopWords, log) {
   }, []);
 }
 
-async function append(storeInfo, version, fields, entities, log = () => null) {
+async function append(storeInfo, version, entities, log = () => null) {
   try {
-    const { name, stopWords } = storeInfo;
+    const { name, stopWords, fields } = storeInfo;
     const prepared = prepareEntities(fields, entities, stopWords, log);
     const db = await openDb(name, version);
     log({ message: MESSAGES.startInsertBatch });

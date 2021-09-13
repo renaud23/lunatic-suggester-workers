@@ -6,8 +6,8 @@ self.onmessage = function (e) {
   function log(message) {
     self.postMessage(message);
   }
-  const { name, version, fields, entities } = e.data;
-  append(name, version, fields, entities, log).then(function () {
+  const { name, stopWords, version, fields, entities } = e.data;
+  append({ name, stopWords, fields }, version, entities, log).then(function () {
     self.postMessage('success');
   });
 };
