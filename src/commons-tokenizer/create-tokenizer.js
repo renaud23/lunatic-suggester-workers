@@ -2,7 +2,7 @@ import tokenizer from 'string-tokenizer';
 import removeAccents from 'remove-accents';
 import prepareStringIndexation from './prepare-string-indexation';
 import softTokenizer from './soft-tokenizer';
-import filterStopWords from './filter-stop-words';
+import createFilterStopWords from './create-filter-stop-words';
 import filterStemmer from './filter-stemmer';
 import filterLength from './filter-length';
 import getRegExpFromPattern from './get-regexp-from-pattern';
@@ -23,8 +23,8 @@ export function tokensToArray(tokenized) {
   }, []);
 }
 
-function createTokenizer(fields = [], stopWords) {
-  const FIELDS_TOKENIZER_MAP = fields.reduce(function (a, f) {
+function createMapFieldsTokenizer(fields, filterStopWords) {
+  return fields.reduce(function (a, f) {
     const { name, rules = [], min, language = 'French' } = f;
     if (rules === 'soft') {
       return { ...a, [name]: softTokenizer };
@@ -39,8 +39,7 @@ function createTokenizer(fields = [], stopWords) {
         [name]: function (string) {
           const what = tokenizer().input(string).tokens(tokenRules).resolve();
           const words = filterStopWords(
-            filterStemmer(filterLength(tokensToArray(what), min), language),
-            stopWords
+            filterStemmer(filterLength(tokensToArray(what), min), language)
           );
 
           return words;
@@ -49,6 +48,11 @@ function createTokenizer(fields = [], stopWords) {
     }
     return { ...a, [name]: defaultTokenizeIt };
   }, {});
+}
+
+function createTokenizer(fields = [], stopWords = []) {
+  const filterStopWords = createFilterStopWords(stopWords);
+  const FIELDS_TOKENIZER_MAP = createMapFieldsTokenizer(fields, filterStopWords);
 
   return function (field, entity) {
     const { name } = field;
@@ -59,8 +63,8 @@ function createTokenizer(fields = [], stopWords) {
   };
 }
 
-function createEntityTokenizer(fields) {
-  const tokenizer = createTokenizer(fields);
+function createEntityTokenizer(fields, stopWords) {
+  const tokenizer = createTokenizer(fields, stopWords);
   return function (entity) {
     return fields.reduce(function (a, field) {
       return [...a, ...tokenizer(field, entity)];
